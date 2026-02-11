@@ -5,8 +5,15 @@ from typing import Optional, List, Dict
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langfuse.langchain import CallbackHandler
-from langfuse import propagate_attributes
+
+from src.core.observe import is_langfuse_enabled
+
+try:
+    from langfuse.langchain import CallbackHandler
+    from langfuse import propagate_attributes
+except ImportError:
+    CallbackHandler = None
+    propagate_attributes = None
 
 
 @contextmanager
@@ -26,7 +33,7 @@ def langfuse_session(
         with langfuse_session(session_id="session_123", user_id="user_456"):
             response = llm.invoke(prompt, config={'callbacks': callbacks})
     """
-    if os.environ.get("LANGFUSE_PUBLIC_KEY") and os.environ.get("LANGFUSE_SECRET_KEY"):
+    if is_langfuse_enabled() and propagate_attributes:
         with propagate_attributes(
             session_id=session_id,
             user_id=user_id,
@@ -91,8 +98,8 @@ class LLMFactory:
         # 2. Langfuse Callback 생성
         callbacks = []
         
-        # Langfuse 3.x: 환경변수를 자동으로 읽음
-        if os.environ.get("LANGFUSE_PUBLIC_KEY") and os.environ.get("LANGFUSE_SECRET_KEY"):
+        # Langfuse: credentials 유효할 때만 사용 (401 방지)
+        if is_langfuse_enabled() and CallbackHandler:
             handler = CallbackHandler()
             callbacks.append(handler)
             

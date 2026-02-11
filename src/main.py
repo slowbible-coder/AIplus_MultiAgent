@@ -8,16 +8,8 @@ load_dotenv()
 from src.graph import create_graph
 
 # Langfuse integration (optional)
-try:
-    from langfuse import observe
-    LANGFUSE_AVAILABLE = True
-except ImportError:
-    LANGFUSE_AVAILABLE = False
-    # Fallback decorator that does nothing
-    def observe(name=None):
-        def decorator(func):
-            return func
-        return decorator
+from src.core.observe import observe
+LANGFUSE_AVAILABLE = True  # observe가 내부적으로 no-op 처리
 
 if "GOOGLE_API_KEY" in os.environ:
     print(f"GOOGLE_API_KEY loaded: {os.environ['GOOGLE_API_KEY'][:5]}...")

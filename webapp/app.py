@@ -35,7 +35,7 @@ st.set_page_config(
 @st.cache_resource
 def get_graph():
     """LangGraph 그래프 캐싱"""
-    from src.agent.graph import create_graph
+    from src.graph import create_graph
     return create_graph()
 
 
